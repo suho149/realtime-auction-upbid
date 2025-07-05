@@ -1,0 +1,40 @@
+# docker-compose.yml
+
+version: '3.8' # Docker Compose 파일 형식 버전
+
+services:
+  # MariaDB 서비스 설정
+  mariadb:
+    image: mariadb:10.11 # 사용할 MariaDB 이미지 버전
+    container_name: auction-mariadb # 컨테이너 이름 지정
+    ports:
+      - "3306:3306" # 호스트의 3306 포트와 컨테이너의 3306 포트를 연결
+    environment:
+      # .env 파일에서 값을 읽어와서 주입합니다.
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD} # root 계정 비밀번호
+      MARIADB_DATABASE: ${DB_NAME}             # 생성할 데이터베이스 이름
+      MARIADB_USER: ${DB_USERNAME}              # 생성할 사용자 이름
+      MARIADB_PASSWORD: ${DB_PASSWORD}          # 생성할 사용자의 비밀번호
+    volumes:
+      - mariadb_data:/var/lib/mysql # 데이터를 영속적으로 저장하기 위한 볼륨 연결
+    command:
+      # 한글(utf8mb4) 사용 및 타임존 설정을 위한 커맨드
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=Asia/Seoul
+    restart: always # 컨테이너가 중지되면 항상 재시작
+
+  # Redis 서비스 설정
+  redis:
+    image: redis:7.2-alpine # 사용할 Redis 이미지 버전
+    container_name: auction-redis # 컨테이너 이름 지정
+    ports:
+      - "6379:6379" # 호스트의 6379 포트와 컨테이너의 6379 포트를 연결
+    volumes:
+      - redis_data:/data # 데이터를 영속적으로 저장하기 위한 볼륨 연결
+    restart: always # 컨테이너가 중지되면 항상 재시작
+
+# Docker가 관리할 볼륨 정의
+volumes:
+  mariadb_data:
+  redis_data:
